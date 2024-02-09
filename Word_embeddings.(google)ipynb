@@ -1,0 +1,554 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Bobghaddar99/deep-learning/blob/main/Word_embeddings.(google)ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "caLGnxM2Ib_T"
+      },
+      "source": [
+        "# Word Embeddings\n",
+        "\n",
+        "\n",
+        "---\n",
+        "\n",
+        "© 2023, Zaka AI, Inc. All Rights Reserved\n",
+        "\n",
+        "**Objective:** The goal from this exercise is to explore the Word2Vec technique for word embeddings and introduce Stanford's GloVe embedding as well. The libraries we will be using are `Gensim` for Word Embeddings Word2Vec and GloVe, `matplotlib` for visualization and `Scikit-Learn` for Principle Component Analysis models which are used for reducing dimensionality."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dj1QPhssIfi8"
+      },
+      "source": [
+        "## Learn Word2Vec Embedding using Gensim\n",
+        "\n",
+        "Word2Vec models require a lot of text, e.g. the entire Wikipedia corpus. However, we will demonstrate the principles using a small in-memory example of text.\n",
+        "\n",
+        "Each sentence must be tokenized (divided into words and prepared). The sentences could be text loaded into memory, or an iterator that progressively loads text, required for very large text corpora.\n",
+        "\n",
+        "There are many parameters on this constructor:\n",
+        "\n",
+        "*   **`size`**: (default 100) The number of dimensions of the embedding, e.g. the length of the dense vector to represent each token (word).\n",
+        "*   **`window`**: (default 5) The maximum distance between a target word and words around the target word.\n",
+        "*   **`min_count`**: (default 5) The minimum count of words to consider when training the model; words with an occurrence less than this count will be ignored.\n",
+        "*   **`workers`**: (default 3) The number of threads to use while training.\n",
+        "*   **`sg`**: (default 0 or CBOW) The training algorithm, either CBOW (0) or skip gram (1)."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "k7pU1nY3LhkO"
+      },
+      "source": [
+        "###Building and training a Word2Vec model"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "bY9k0TquxeHp",
+        "outputId": "7122ccb1-ff01-448a-d3c0-62a25b24ba4b",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "from gensim.models import Word2Vec\n",
+        "\n",
+        "# define training data\n",
+        "sentences = [['this', 'is', 'the', 'first', 'sentence', 'for', 'word2vec'],\n",
+        "\t\t\t['this', 'is', 'the', 'second', 'sentence'],\n",
+        "\t\t\t['yet', 'another', 'sentence'],\n",
+        "\t\t\t['one', 'more', 'sentence'],\n",
+        "\t\t\t['and', 'the', 'final', 'sentence']]\n",
+        "\n",
+        "# train model\n",
+        "model = Word2Vec(sentences, min_count=1)\n",
+        "\n",
+        "# summarize the loaded model\n",
+        "print(model)\n",
+        "\n",
+        "# summarize vocabulary\n",
+        "words = list(model.wv.vocab)\n",
+        "print(words)\n",
+        "\n",
+        "# access vector for one word\n",
+        "print(model['sentence'])\n",
+        "\n",
+        "# save model\n",
+        "model.save('model.bin')"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Word2Vec(vocab=14, size=100, alpha=0.025)\n",
+            "['this', 'is', 'the', 'first', 'sentence', 'for', 'word2vec', 'second', 'yet', 'another', 'one', 'more', 'and', 'final']\n",
+            "[-1.3784069e-03 -3.1434246e-03  3.0703514e-03  4.2790016e-03\n",
+            " -2.3207550e-03 -1.9930408e-03 -4.3727313e-03 -1.0505050e-05\n",
+            " -2.6345600e-03 -7.7385810e-04 -3.7429268e-03  3.0451985e-03\n",
+            " -4.5697689e-03  3.2460354e-03 -4.9768789e-03 -3.6828050e-03\n",
+            "  2.8782398e-03 -3.9947047e-03  1.0008380e-03  4.9951067e-03\n",
+            " -1.7527443e-03 -2.6536703e-03  3.6670358e-03  1.7997981e-03\n",
+            " -3.7263846e-03 -4.5957798e-03  1.6356111e-03  4.8708459e-03\n",
+            "  4.2911042e-03 -4.8295213e-03 -1.2328147e-03  3.4404309e-03\n",
+            "  2.9820725e-03  1.9527810e-03 -4.8001544e-03  2.5415833e-03\n",
+            " -2.1798612e-04 -3.3242037e-03 -3.4177916e-03 -4.6819593e-03\n",
+            "  5.5225246e-04  2.6949949e-03 -3.9507779e-03 -2.9766390e-03\n",
+            " -3.8757839e-03  8.3400478e-04  7.2947110e-04  3.1319773e-03\n",
+            " -2.5410433e-03 -9.3832597e-05  4.1514933e-03  2.4168103e-03\n",
+            "  3.4991689e-03  1.2300796e-03 -1.1669715e-03  9.1231312e-04\n",
+            " -2.1123521e-03 -7.5024477e-04  1.0243490e-03  1.4677241e-03\n",
+            " -4.2533516e-03  4.0978007e-03 -2.6110210e-03  1.0332312e-03\n",
+            "  3.8377353e-04  4.2057969e-03 -2.5986508e-03 -2.3391715e-03\n",
+            " -3.0076031e-03 -2.3183904e-03 -8.0618006e-04  4.3399527e-04\n",
+            "  1.9942166e-03 -1.0993165e-03  5.8058480e-04 -4.8436360e-03\n",
+            " -1.2036468e-03  4.5838198e-03  4.0131686e-03 -3.5147420e-03\n",
+            "  4.0578400e-03 -1.4253538e-03 -1.2699103e-03  1.8536639e-04\n",
+            " -6.2901212e-04 -5.6504546e-04  2.4080104e-03  1.7432318e-03\n",
+            "  6.6124083e-04  1.3255011e-03 -1.7339678e-03 -2.4545831e-03\n",
+            "  2.5121260e-03  4.2791460e-03 -3.9772713e-03  2.0241768e-03\n",
+            "  4.1375407e-03 -2.2555122e-03 -3.6715877e-03 -4.9627111e-03]\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:21: DeprecationWarning: Call to deprecated `__getitem__` (Method will be removed in 4.0.0, use self.wv.__getitem__() instead).\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "IWjTGAuQC59K",
+        "outputId": "a195aaf3-cffe-4f58-8115-6ddad2ec6a03",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "# let's load the model and test it\n",
+        "\n",
+        "# load model\n",
+        "new_model = Word2Vec.load('model.bin')\n",
+        "print(new_model['this', 'is'])"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[ 4.99171019e-03 -4.39617084e-03  1.68531889e-03 -4.86380188e-03\n",
+            "   1.69925473e-03 -5.53779188e-04  3.92665528e-03 -1.62135388e-04\n",
+            "  -2.63154344e-03 -2.51663849e-03  4.74164868e-03  1.16177762e-04\n",
+            "   2.28900230e-03  2.43169209e-03  4.28479747e-04 -2.16359296e-03\n",
+            "   2.52837176e-03  4.25848411e-03  3.83304688e-03  1.01798878e-03\n",
+            "   6.31401781e-04 -3.82553226e-05 -6.98903983e-04 -3.36504378e-03\n",
+            "  -1.52790325e-03  1.61296257e-03 -2.51696701e-03  6.74758048e-04\n",
+            "  -3.30200070e-03  3.06645897e-03  4.67910059e-03  1.72663550e-03\n",
+            "  -4.79519879e-03  2.21283408e-03  3.45275179e-03  4.02641919e-04\n",
+            "   1.38853269e-03  1.69168587e-03  3.65935825e-03 -1.79594872e-03\n",
+            "   3.43364850e-03  5.82089764e-04  4.73642489e-03 -2.10722083e-05\n",
+            "   2.95409118e-03  3.21172643e-03 -1.85071421e-03 -6.34553318e-04\n",
+            "   4.90555773e-03  1.99070550e-03  2.60857772e-03 -1.14160626e-04\n",
+            "   6.56769378e-04  1.91599363e-03 -6.31431583e-04  1.98872294e-03\n",
+            "  -4.98485519e-04 -2.19369656e-03 -2.09734496e-03  4.85307211e-03\n",
+            "  -2.57804897e-03  6.66974520e-05  2.25700442e-05  1.27958570e-04\n",
+            "  -4.16054507e-04 -1.64632642e-04  3.13507579e-03  2.90423050e-03\n",
+            "  -3.96497175e-03 -1.26722548e-03  1.08137890e-03 -3.27847549e-03\n",
+            "  -3.80325527e-03 -3.28490720e-03 -4.67364350e-03 -1.60358276e-03\n",
+            "  -6.56019605e-04 -1.83048507e-03 -2.86347372e-03  2.85374024e-03\n",
+            "   3.37965833e-03  3.10775358e-03 -4.21722140e-03 -2.11684615e-03\n",
+            "  -3.95965111e-03  1.86727743e-03 -2.85467296e-03 -9.22520485e-05\n",
+            "   3.72194569e-03 -4.94364602e-03  4.88242460e-03 -4.12750337e-03\n",
+            "   3.00729205e-03 -4.56574839e-03  4.69572004e-03 -2.22177873e-03\n",
+            "  -1.75817078e-03  3.82902776e-03 -3.18969786e-03  1.99585408e-03]\n",
+            " [-3.19388206e-03  9.15170938e-04 -7.55102315e-04 -3.86546901e-03\n",
+            "   3.14816553e-03  1.63192092e-03  2.61558755e-03 -4.89564659e-03\n",
+            "   3.57866660e-03  3.35758110e-03 -3.14585119e-03  8.88716488e-04\n",
+            "   3.81760270e-04  4.67233732e-03 -3.46639706e-03  1.43549358e-03\n",
+            "   6.28497801e-04 -3.96529865e-03 -3.62648745e-03 -8.70061456e-04\n",
+            "  -7.65272125e-04  4.34880052e-03  2.87954765e-03 -4.96233907e-03\n",
+            "  -3.05293989e-03 -1.55288866e-03 -1.97950471e-03  2.47870875e-03\n",
+            "   4.14660154e-03 -9.95355542e-04  8.10466881e-04 -4.68464475e-03\n",
+            "   4.07339772e-03 -2.37239129e-03  3.52153438e-03  3.87312588e-03\n",
+            "  -1.99380703e-03 -1.26487738e-03 -3.41767049e-03 -2.50008958e-03\n",
+            "   2.64169718e-03  8.69410229e-04  3.81280808e-03 -4.00881330e-03\n",
+            "  -3.12936469e-03  4.84807463e-03  2.23127456e-04 -4.93673654e-03\n",
+            "   4.54657571e-03 -3.24861147e-03  5.17264474e-04 -4.93004511e-04\n",
+            "  -2.88010272e-03 -2.66249781e-03 -1.59490784e-03  3.59423109e-03\n",
+            "  -4.49504238e-03 -4.96349530e-03 -2.53316713e-03  2.79432232e-03\n",
+            "   2.05946201e-03  4.47099749e-03  4.03079484e-03 -3.87606537e-03\n",
+            "   1.25293748e-03  8.96104262e-04  4.89484612e-03  1.09582092e-03\n",
+            "  -4.60728025e-03 -1.35988963e-03 -2.29147403e-03 -4.76350356e-03\n",
+            "  -2.42805434e-03  9.69296379e-04 -4.42766305e-03  3.37463222e-03\n",
+            "   1.87515782e-03  2.07641904e-04 -1.06637890e-03 -1.48084399e-03\n",
+            "  -1.18289096e-03 -2.53636041e-04  4.34784451e-03 -1.64968707e-03\n",
+            "  -6.15988742e-04 -4.14987653e-03  1.75857614e-03 -3.25515564e-03\n",
+            "   1.49969489e-03  1.84388377e-03  1.09768088e-03 -3.61970835e-03\n",
+            "  -4.70868824e-03 -1.36964943e-03  1.01432786e-03  2.63884757e-03\n",
+            "  -3.71424970e-03 -4.83513577e-03  4.96942364e-03 -1.35208666e-03]]\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:5: DeprecationWarning: Call to deprecated `__getitem__` (Method will be removed in 4.0.0, use self.wv.__getitem__() instead).\n",
+            "  \"\"\"\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "moU2ue2iCCGm"
+      },
+      "source": [
+        "### Visualize Word Embedding\n",
+        "\n",
+        "After learning the word embedding for the text, it's nice to explore it with visualization. We can use classical projection methods to reduce the high-dimensional word vectors to two- dimensional plots and plot them on a graph. The visualizations can provide a qualitative diagnostic for our learned model."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "QSr__Ji1Ilku",
+        "outputId": "68423d2d-e20d-4c16-ce86-8005510fde7b",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 320
+        }
+      },
+      "source": [
+        "from gensim.models import Word2Vec\n",
+        "from sklearn.decomposition import PCA\n",
+        "from matplotlib import pyplot\n",
+        "\n",
+        "# define training data\n",
+        "sentences = [['this', 'is', 'the', 'first', 'sentence', 'for', 'word2vec'],\n",
+        "\t\t\t['this', 'is', 'the', 'second', 'sentence'],\n",
+        "\t\t\t['yet', 'another', 'sentence'],\n",
+        "\t\t\t['one', 'more', 'sentence'],\n",
+        "\t\t\t['and', 'the', 'final', 'sentence']]\n",
+        "\n",
+        "# train model\n",
+        "model = Word2Vec(sentences, min_count=1)\n",
+        "\n",
+        "# fit a 2D PCA model to the vectors\n",
+        "X = model[model.wv.vocab]\n",
+        "pca = PCA(n_components=2) \t\t\t\t#reduce dimensionality to 2D\n",
+        "result = pca.fit_transform(X) \t\t#2D model to plot\n",
+        "\n",
+        "# create a scatter plot of the projection\n",
+        "# pull out the 2 dimensions as x and y\n",
+        "pyplot.scatter(result[:, 0], result[:, 1])\n",
+        "words = list(model.wv.vocab)\n",
+        "\n",
+        "# annotate the points on the graph with the words themselves\n",
+        "for i, word in enumerate(words):\n",
+        "\tpyplot.annotate(word, xy=(result[i, 0], result[i, 1]))\n",
+        "pyplot.show()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:16: DeprecationWarning: Call to deprecated `__getitem__` (Method will be removed in 4.0.0, use self.wv.__getitem__() instead).\n",
+            "  app.launch_new_instance()\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ],
+            "image/png": "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+KPr1q2b++GHHxzgUlJSnHPOJSYmuscee8w559zVV1/tpk+f7pxz7qWXXnJDhgxxzjk3atQoN3v27MI2L730Unf//fc755x799133YABA5xzzv3rX/8qbOvo0aOuV69ebtu2bW7JkiWuYcOGbtu2bZXwjqU0jRo1quoQpBIAqS7A92vQl86aWRjwHHAFsBNYY2YpzjnfcYjfAvucc780s5uAp4AbzawrcBPQDWgDLDKzTt42gdqUEPGdSTU39Q3qfrOGphHh7Nixg82bN1OvXj2uvvpqAHr16sXChQsBWLVqFW+99RYAI0eOLHXq62HDhhVun5GRAVDiLKn16tUjLi6ODh06VNRbrlWGDh3Kjh07OHr0KPfeey+33347jRs35t577+Wdd94hIiKCefPm0apVK7Zv387NN99Mdna23+lJpPYKxTBUHLDFObfNOfcTMBMo/ikbArzsLc8BBpiZeeUznXPHnHPbye9FxJWxTQmBgplUM/cf4cg368j6MpV6w57gkenvERMTw9GjRwkPDyf/nwvCwsJO6jxCwYypvts7b5bU9PR00tPT2b59OwMHDgSgUaNGIXqHMnXqVNLS0khNTWXixIns2bOHw4cP06dPHz777DMuueQSXnzxRQDuvfdefv/73/P555/TunXrKo5cqpNQJIu2wA6f9Z1emd86zrlc4ABweinblqVNAMzsdjNLNbPUrKysIN5G7eQ7k+rxYz9Sp0EjjhHOI68u5JNPPil124suuoiZM2cCMGPGDPr27QtAkyZNOHToUMB9lzRLqgRv7tpM4pMX0yHpXXr86o906NSVPn36lNhbLOjtrVy5kl//+tdAfm9RpECNP8HtnJvinIt1zsUW3EBGys53JtWIDr1wx4+T+eIdbHrnX/Tp06fUbSdNmsS0adOIiori1Vdf5Z///CeQf9vPCRMmEBMTU3iC258xY8bQtWtXevbsSffu3Rk7dqyufgqBYHuLBeUivkIx3UcmcLbPejuvzF+dnWZWFzgN2BNg20BtSgi0aRZROJOq1Q2n1a8eAfJnUl3qzaSanZ1dWH/48OEMHz4cgF/84hcsXrz4hDbj4+OLXDq7dOnSwuUzzjij8K/YOnXq8MQTT5wwXXa/fv3o169f0O+ttiqtt/hFgN5ifHw8M2fO5De/+Q0zZsyojHClhghFz2IN0NHMOphZPfJPWKcU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\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "zLxMShJHJQIs"
+      },
+      "source": [
+        "## Google Word2Vec\n",
+        "\n",
+        "Instead of training your own word vectors (which requires a lot of RAM and compute power), you can simply use a pre-trained word embedding. Google has published a pre-trained Word2Vec model that was trained on Google news data (about 100 billion words). It contains 3 million words and phrases and was fit using 300-dimensional word vectors. It is a 1.53 Gigabyte file."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "2NpK-fo1JQUq",
+        "outputId": "de508535-f1b9-48ba-e20c-e649ed619592",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "import gensim.downloader as api\n",
+        "\n",
+        "model = api.load(\"word2vec-google-news-300\")"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[==================================================] 100.0% 1662.8/1662.8MB downloaded\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "8Fl1ZQHJHGIN"
+      },
+      "source": [
+        "#### Let's have fun"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "t3kxqDMymKH_",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "1c9bc3f4-1784-4aee-989e-08d42f149d37"
+      },
+      "source": [
+        "# get word vector\n",
+        "model['car']"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([ 0.13085938,  0.00842285,  0.03344727, -0.05883789,  0.04003906,\n",
+              "       -0.14257812,  0.04931641, -0.16894531,  0.20898438,  0.11962891,\n",
+              "        0.18066406, -0.25      , -0.10400391, -0.10742188, -0.01879883,\n",
+              "        0.05200195, -0.00216675,  0.06445312,  0.14453125, -0.04541016,\n",
+              "        0.16113281, -0.01611328, -0.03088379,  0.08447266,  0.16210938,\n",
+              "        0.04467773, -0.15527344,  0.25390625,  0.33984375,  0.00756836,\n",
+              "       -0.25585938, -0.01733398, -0.03295898,  0.16308594, -0.12597656,\n",
+              "       -0.09912109,  0.16503906,  0.06884766, -0.18945312,  0.02832031,\n",
+              "       -0.0534668 , -0.03063965,  0.11083984,  0.24121094, -0.234375  ,\n",
+              "        0.12353516, -0.00294495,  0.1484375 ,  0.33203125,  0.05249023,\n",
+              "       -0.20019531,  0.37695312,  0.12255859,  0.11425781, -0.17675781,\n",
+              "        0.10009766,  0.0030365 ,  0.26757812,  0.20117188,  0.03710938,\n",
+              "        0.11083984, -0.09814453, -0.3125    ,  0.03515625,  0.02832031,\n",
+              "        0.26171875, -0.08642578, -0.02258301, -0.05834961, -0.00787354,\n",
+              "        0.11767578, -0.04296875, -0.17285156,  0.04394531, -0.23046875,\n",
+              "        0.1640625 , -0.11474609, -0.06030273,  0.01196289, -0.24707031,\n",
+              "        0.32617188, -0.04492188, -0.11425781,  0.22851562, -0.01647949,\n",
+              "       -0.15039062, -0.13183594,  0.12597656, -0.17480469,  0.02209473,\n",
+              "       -0.1015625 ,  0.00817871,  0.10791016, -0.24609375, -0.109375  ,\n",
+              "       -0.09375   , -0.01623535, -0.20214844,  0.23144531, -0.05444336,\n",
+              "       -0.05541992, -0.20898438,  0.26757812,  0.27929688,  0.17089844,\n",
+              "       -0.17578125, -0.02770996, -0.20410156,  0.02392578,  0.03125   ,\n",
+              "       -0.25390625, -0.125     , -0.05493164, -0.17382812,  0.28515625,\n",
+              "       -0.23242188,  0.0234375 , -0.20117188, -0.13476562,  0.26367188,\n",
+              "        0.00769043,  0.20507812, -0.01708984, -0.12988281,  0.04711914,\n",
+              "        0.22070312,  0.02099609, -0.29101562, -0.02893066,  0.17285156,\n",
+              "        0.04272461, -0.19824219, -0.04003906, -0.16992188,  0.10058594,\n",
+              "       -0.09326172,  0.15820312, -0.16503906, -0.06054688,  0.19433594,\n",
+              "       -0.07080078, -0.06884766, -0.09619141, -0.07226562,  0.04882812,\n",
+              "        0.07324219,  0.11035156,  0.04858398, -0.17675781, -0.33789062,\n",
+              "        0.22558594,  0.16308594,  0.05102539, -0.08251953,  0.07958984,\n",
+              "        0.08740234, -0.16894531, -0.02160645, -0.19238281,  0.03857422,\n",
+              "       -0.05102539,  0.21972656,  0.08007812, -0.21191406, -0.07519531,\n",
+              "       -0.15039062,  0.3046875 , -0.17089844,  0.12353516, -0.234375  ,\n",
+              "       -0.10742188, -0.06787109,  0.01904297, -0.14160156, -0.22753906,\n",
+              "       -0.16308594,  0.14453125, -0.15136719, -0.296875  ,  0.22363281,\n",
+              "       -0.10205078, -0.0456543 , -0.21679688, -0.09033203,  0.09375   ,\n",
+              "       -0.15332031, -0.01550293,  0.3046875 , -0.23730469,  0.08935547,\n",
+              "        0.03710938,  0.02941895, -0.28515625,  0.15820312, -0.00306702,\n",
+              "        0.06054688,  0.00497437, -0.15234375, -0.00836182,  0.02197266,\n",
+              "       -0.12109375, -0.13867188, -0.2734375 , -0.06835938,  0.08251953,\n",
+              "       -0.26367188, -0.16992188,  0.14746094,  0.08496094,  0.02075195,\n",
+              "        0.13671875, -0.04931641, -0.0100708 , -0.00369263, -0.10839844,\n",
+              "        0.14746094, -0.15527344,  0.16113281,  0.05615234, -0.05004883,\n",
+              "       -0.1640625 , -0.26953125,  0.4140625 ,  0.06079102, -0.046875  ,\n",
+              "       -0.02514648,  0.10595703,  0.1328125 , -0.16699219, -0.04907227,\n",
+              "        0.04663086,  0.05151367, -0.07958984, -0.16503906, -0.29882812,\n",
+              "        0.06054688, -0.15332031, -0.00598145,  0.06640625, -0.04516602,\n",
+              "        0.24316406, -0.07080078, -0.36914062, -0.23144531, -0.11914062,\n",
+              "       -0.08300781,  0.14746094, -0.05761719,  0.23535156, -0.12304688,\n",
+              "        0.14648438,  0.13671875,  0.15429688,  0.02111816, -0.09570312,\n",
+              "        0.05859375,  0.03979492, -0.08105469,  0.0559082 , -0.16601562,\n",
+              "        0.27148438, -0.20117188, -0.00915527,  0.07324219,  0.10449219,\n",
+              "        0.34570312, -0.26367188,  0.02099609, -0.40039062, -0.03417969,\n",
+              "       -0.15917969, -0.08789062,  0.08203125,  0.23339844,  0.0213623 ,\n",
+              "       -0.11328125,  0.05249023, -0.10449219, -0.02380371, -0.08349609,\n",
+              "       -0.04003906,  0.01916504, -0.01226807, -0.18261719, -0.06787109,\n",
+              "       -0.08496094, -0.03039551, -0.05395508,  0.04248047,  0.12792969,\n",
+              "       -0.27539062,  0.28515625, -0.04736328,  0.06494141, -0.11230469,\n",
+              "       -0.02575684, -0.04125977,  0.22851562, -0.14941406, -0.15039062],\n",
+              "      dtype=float32)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hAgKecjUmW_s"
+      },
+      "source": [
+        "# get most similar words\n",
+        "model.most_similar('yellow')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "bN2VuE5UmPUm"
+      },
+      "source": [
+        "# queen = (king - man) + woman\n",
+        "result = model.most_similar(positive=['woman', 'king'], negative=['man'], topn=1)\n",
+        "print(result)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "QhmQmasBmi2x"
+      },
+      "source": [
+        "# (france - paris) + spain = ?\n",
+        "result = model.most_similar(positive=[\"paris\",\"spain\"], negative=[\"france\"], topn=1)\n",
+        "print(result)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "w91o81Slm3aY"
+      },
+      "source": [
+        "model.doesnt_match([\"red\", \"blue\", \"car\", \"orange\"])\n"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "HR-cJcT-J9Xq"
+      },
+      "source": [
+        "## Stanford’s GloVe Embedding\n",
+        "\n",
+        "Like Word2Vec, the GloVe researchers also provide pre-trained word vectors. Let's download the smallest GloVe pre-trained model from the GloVe website. It's a 822 Megabyte zip file with 4 different models (50, 100, 200 and 300-dimensional vectors) trained on Wikipedia data with 6 billion tokens and a 400,000 word vocabulary."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "l9WwmofxIIQJ"
+      },
+      "source": [
+        "# download\n",
+        "!wget http://nlp.stanford.edu/data/glove.6B.zip\n",
+        "\n",
+        "# unzip downloaded word embeddings\n",
+        "!unzip glove.6B.zip\n",
+        "\n",
+        "# list files in current directoty\n",
+        "!ls -lah\n"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "CsXwAaiwI_1P"
+      },
+      "source": [
+        "from gensim.models import KeyedVectors\n",
+        "from gensim.scripts.glove2word2vec import glove2word2vec\n",
+        "\n",
+        "# convert the 100-dimensional version of the glove model to word2vec format\n",
+        "glove_input_file = 'glove.6B.100d.txt'\n",
+        "word2vec_output_file = 'glove.6B.100d.txt.word2vec'\n",
+        "glove2word2vec(glove_input_file, word2vec_output_file)\n",
+        "\n",
+        "# load the converted model\n",
+        "filename = 'glove.6B.100d.txt.word2vec'\n",
+        "model = KeyedVectors.load_word2vec_format(filename, binary=False)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "MrEe17hdJEqB"
+      },
+      "source": [
+        "# calculate: (king - man) + woman = ?\n",
+        "result = model.most_similar(positive=['woman', 'king'], negative=['man'], topn=1)\n",
+        "print(result)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
